@@ -6,14 +6,12 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.util.Base64;
 
-import org.springframework.web.multipart.MultipartFile;
-
 public class FileToBase64Util {
-	public String base64(MultipartFile file) throws Exception {
+	public static void main(String[] args) throws Exception {
 		
-		  String resutl = encodeFileToBase64Binary(file.getOriginalFilename());
+		  String resutl = encodeFileToBase64Binary("C://Users/lime/Pictures/80c2c682-e430-4ad4-b870-0620ed316618.png");
 		  System.out.println(resutl);
-		  return resutl;
+		 
 	}
 	private static String encodeFileToBase64Binary(String fileName)
 			throws IOException {
@@ -49,4 +47,3 @@ public class FileToBase64Util {
 	    return bytes;
 	}
 }
-

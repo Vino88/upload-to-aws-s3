@@ -20,7 +20,7 @@ import com.nostra.test.util.UploadS3Object;
 public class UploadS3Util {
 	@Autowired
 	private S3Properties s3Properties;
-	private AmazonS3 s3Client = AmazonS3ClientBuilder.standard().withRegion(Regions.AP_SOUTHEAST_1).build();
+	private AmazonS3 s3Client = AmazonS3ClientBuilder.standard().withRegion(Regions.US_EAST_2).build();
 	
 	public String upload(String fileObjKeyName, String fileName, InputStream is) throws IOException {
 		UploadS3Object o = new UploadS3Object();

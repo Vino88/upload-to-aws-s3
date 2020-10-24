@@ -4,7 +4,6 @@ import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
-import java.util.Optional;
 import java.util.UUID;
 
 import javax.persistence.criteria.CriteriaBuilder;
@@ -37,23 +36,24 @@ public class MovieServiceImpl implements MovieService {
 	
 	public void createOrUpdateMovie(PostMovieDto dto) {
 		String fileKeyResponse = null;
-		if(dto.getId() == null) {
-			Movie m = new Movie();
+		Movie m = null;
+		if(dto.getId() != null) {
+			m =movieRepository.findOne(dto.getId());
 			m.setTitle(dto.getTitle());
 			m.setDescription(dto.getDescription());
 			m.setAuthor(dto.getAuthor());
 			m.setRating(0.0);
-			m.setCreatedAt(new Date());
 			m.setUpdatedAt(new Date());
-			m.setReleaseDate(dto.getReleaseDate());
 			
-			Category category = categoryRepository.findOne(dto.getCategory().getId());
-			if(dto.getCategory() != null) {
-				m.setCategory(category);
+			if(dto.getCategory() != null && dto.getCategory().getId() != null) {
+				Category category = categoryRepository.findOne(dto.getCategory().getId());
+				if(category != null && category.getCategoryId() != null) {
+					m.setCategory(category);
+				}
 			}
 			
-			if(dto.getImageFile().getOriginalFilename() != null && dto.getImageFile().getOriginalFilename().trim().length() > 0) {
-				String fileObjKeyName = "/"+ UUID.randomUUID().toString() + dto.getImageFile().getOriginalFilename();
+			if(dto.getImageFile() != null) {
+				String fileObjKeyName = UUID.randomUUID().toString() + dto.getImageFile().getOriginalFilename( );
 				fileObjKeyName = fileObjKeyName.replaceAll(" ", "");
 				try {
 					fileKeyResponse = uploadS3Util.upload(fileObjKeyName, dto.getImageFile().getOriginalFilename(), dto.getImageFile().getInputStream());
@@ -64,8 +64,8 @@ public class MovieServiceImpl implements MovieService {
 				}
 			}
 			
-			if(dto.getVideoFile().getOriginalFilename() != null && dto.getVideoFile().getOriginalFilename().trim().length() > 0) {
-				String fileObjKeyName = "/"+ UUID.randomUUID().toString() + dto.getVideoFile().getOriginalFilename();
+			if(dto.getVideoFile() != null) {
+				String fileObjKeyName = UUID.randomUUID().toString() + dto.getVideoFile().getOriginalFilename();
 				fileObjKeyName = fileObjKeyName.replaceAll(" ", "");
 				try {
 					fileKeyResponse = uploadS3Util.upload(fileObjKeyName, dto.getVideoFile().getOriginalFilename(), dto.getVideoFile().getInputStream());
@@ -79,43 +79,45 @@ public class MovieServiceImpl implements MovieService {
 			movieRepository.save(m);
 			
 		}else {
-			Movie mov = movieRepository.findOne(dto.getId());
-			mov.setTitle(dto.getTitle());
-			mov.setDescription(dto.getDescription());
-			mov.setAuthor(dto.getAuthor());
-			mov.setUpdatedAt(new Date());
-			mov.setReleaseDate(dto.getReleaseDate());
+			m = new Movie();
+			m.setTitle(dto.getTitle());
+			m.setDescription(dto.getDescription());
+			m.setAuthor(dto.getAuthor());
+			m.setCreatedAt(new Date());
+			m.setReleaseDate(dto.getReleaseDate());
 			
-			Category category = categoryRepository.findOne(dto.getCategory().getId());
-			if(category != null) {
-				mov.setCategory(category);
+			if(dto.getCategory() != null && dto.getCategory().getId() != null) {
+				Category category = categoryRepository.findOne(dto.getCategory().getId());
+				if(category != null) {
+					m.setCategory(category);
+				}
 			}
 			
-			if(dto.getImageFile().getOriginalFilename() != null && dto.getImageFile().getOriginalFilename().trim().length() > 0) {
-				String fileObjKeyName = "/"+ UUID.randomUUID().toString() + dto.getImageFile().getOriginalFilename();
+			if(dto.getImageFile() != null) {
+				String fileObjKeyName = UUID.randomUUID().toString() + dto.getImageFile().getOriginalFilename();
 				fileObjKeyName = fileObjKeyName.replaceAll(" ", "");
 				try {
 					fileKeyResponse = uploadS3Util.upload(fileObjKeyName, dto.getImageFile().getOriginalFilename(), dto.getImageFile().getInputStream());
-					mov.setImageUrl(uploadS3Util.getUrl()+fileKeyResponse);
+					m.setImageUrl(uploadS3Util.getUrl()+fileKeyResponse);
 				} catch (IOException e) {
 					// TODO Auto-generated catch block
 					e.printStackTrace();
 				}
 			}
 			
-			if(dto.getVideoFile().getOriginalFilename() != null && dto.getVideoFile().getOriginalFilename().trim().length() > 0) {
-				String fileObjKeyName = "/"+ UUID.randomUUID().toString() + dto.getVideoFile().getOriginalFilename();
+			if(dto.getVideoFile() != null) {
+				String fileObjKeyName = UUID.randomUUID().toString() + dto.getVideoFile().getOriginalFilename();
 				fileObjKeyName = fileObjKeyName.replaceAll(" ", "");
 				try {
 					fileKeyResponse = uploadS3Util.upload(fileObjKeyName, dto.getVideoFile().getOriginalFilename(), dto.getVideoFile().getInputStream());
-					mov.setVideoUrl(uploadS3Util.getUrl()+fileKeyResponse);
+					m.setVideoUrl(uploadS3Util.getUrl()+fileKeyResponse);
 				} catch (IOException e) {
 					// TODO Auto-generated catch block
 					e.printStackTrace();
 				}
 			}
 			
-			movieRepository.save(mov);
+			movieRepository.save(m);
 		}
 	}
 
@@ -151,11 +153,6 @@ public class MovieServiceImpl implements MovieService {
 	public List<MovieSectionsDto> getRecomendation() {
 		Double rate = 4.0;
 		Specification<Movie> spec= new Specification<Movie>() {
-            /**
-			 * 
-			 */
-			private static final long serialVersionUID = 1L;
-
 			public Predicate toPredicate(Root<Movie> root, CriteriaQuery<?> query,
                     CriteriaBuilder builder) {
  

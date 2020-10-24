@@ -12,7 +12,7 @@ import com.nostra.test.dto.MovieSectionsDto;
 import com.nostra.test.dto.Response;
 
 @RestController
-@RequestMapping("/api")
+@RequestMapping("/api/movie")
 public class SearchControllerApi {
 
 	@Autowired

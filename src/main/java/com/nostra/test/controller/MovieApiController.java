@@ -9,6 +9,7 @@ import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
@@ -46,16 +47,15 @@ public class MovieApiController {
 	}
 	
 	@PostMapping("/create")
-	public ResponseEntity<MessageUtil> createOrUpdateMovie(PostMovieDto dto) throws IOException{
+	public ResponseEntity<MessageUtil> createOrUpdateMovie(@RequestBody PostMovieDto dto) throws IOException{
 		MessageUtil message = null;
 		if(dto != null) {
 			movieService.createOrUpdateMovie(dto);
 			message = new MessageUtil(200, "SUCCESS", "Movie Has been created");
-			return new ResponseEntity<MessageUtil>(message, HttpStatus.OK);
 		}else {
 			message = new MessageUtil(400, "FAILED", "Bad Request!");
-			return new ResponseEntity<MessageUtil>(message, HttpStatus.BAD_REQUEST);
 		}
+		return new ResponseEntity<MessageUtil>(message, HttpStatus.OK);
 	}
 	
 	@DeleteMapping("/delete/{id}")
